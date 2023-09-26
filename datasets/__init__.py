@@ -1,6 +1,8 @@
 import numpy as np
 import os
 import torch
+import webdataset as wds
+from functools import partial
 import torchvision.transforms as transforms
 from torchvision.datasets import CIFAR10, LSUN
 from torch.utils.data import DataLoader
@@ -14,10 +16,11 @@ from datasets.bair import BAIRDataset
 from datasets.kth import KTHDataset
 from datasets.cityscapes import CityscapesDataset
 from datasets.ucf101 import UCF101Dataset
+from datasets.fmow import fmow_temporal_preprocess_train
 from torch.utils.data import Subset
 
 
-DATASETS = ['CIFAR10', 'CELEBA', 'LSUN', 'FFHQ', 'IMAGENET', 'MOVINGMNIST', 'STOCHASTICMOVINGMNIST', 'BAIR', 'KTH', 'CITYSCAPES', 'UCF101']
+DATASETS = ['FMOW', 'CIFAR10', 'CELEBA', 'LSUN', 'FFHQ', 'IMAGENET', 'MOVINGMNIST', 'STOCHASTICMOVINGMNIST', 'BAIR', 'KTH', 'CITYSCAPES', 'UCF101']
 
 
 def get_dataloaders(data_path, config):
@@ -45,10 +48,10 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
             transforms.RandomHorizontalFlip(p=0.5),
             transforms.ToTensor()
         ])
-        test_transform = transforms.Compose([
-            transforms.Resize(config.data.image_size),
-            transforms.ToTensor()
-        ])
+    test_transform = transforms.Compose([
+        transforms.Resize(config.data.image_size),
+        transforms.ToTensor()
+    ])
 
     if config.data.dataset.upper() == 'CIFAR10':
         dataset = CIFAR10(data_path, train=True, download=True,
@@ -213,6 +216,27 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
                                 random_horizontal_flip=config.data.random_flip)
         test_dataset = UCF101Dataset(data_path, frames_per_sample=frames_per_sample, image_size=config.data.image_size, train=False, random_time=True,
                                      random_horizontal_flip=False, total_videos=256)
+    elif config.data.dataset.upper() == 'FMOW':
+        frames_per_sample = config.data.num_frames_cond + getattr(config.data, "num_frames_future", 0) + video_frames_pred
+        # fmow_train_meta_df = pd.read_csv('/atlas2/u/samarkhanna/fmow_csvs/fmow-train-meta.csv')
+        dataset = wds.DataPipeline(
+            wds.ResampledShards(
+                '/atlas2/data/satlas/fmow_temporal_webdataset/fmow-temporal-512-train/{000000..000229}.tar'),
+            wds.tarfile_to_samples(),
+            wds.shuffle(100, initial=100),
+            wds.decode(),
+            partial(fmow_temporal_preprocess_train, img_transform=tran_transform, num_cond=frames_per_sample),
+        )
+        # fmow_val_meta_df = pd.read_csv('/atlas2/u/samarkhanna/fmow_csvs/fmow-val-meta.csv')
+        test_dataset = wds.DataPipeline(
+            wds.ResampledShards(
+                '/atlas2/data/satlas/fmow_temporal_webdataset/fmow-temporal-512-val/{000000..000032}.tar'),
+            wds.tarfile_to_samples(),
+            wds.shuffle(100, initial=100),
+            wds.decode(),
+            partial(fmow_temporal_preprocess_train, img_transform=test_transform, num_cond=frames_per_sample),
+        )
+
 
     subset_num = getattr(config.data, "subset", -1)
     if subset_num > 0:
