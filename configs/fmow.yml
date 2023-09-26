@@ -63,7 +63,7 @@ data:
   random_flip: false
   rescaled: true
   color_jitter: 0.0
-  num_workers: 0
+  num_workers: 2
   num_frames: 1
   num_frames_cond: 2
   num_frames_future: 1
