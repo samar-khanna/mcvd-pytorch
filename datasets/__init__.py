@@ -229,7 +229,7 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
             wds.shuffle(100, initial=100),
             wds.decode(),
             partial(fmow_temporal_preprocess_train, img_transform=tran_transform, num_cond=frames_per_sample),
-        )
+        ).with_length(10000)
         # fmow_val_meta_df = pd.read_csv('/atlas2/u/samarkhanna/fmow_csvs/fmow-val-meta.csv')
         test_dataset = wds.DataPipeline(
             wds.ResampledShards(
@@ -238,7 +238,7 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
             wds.shuffle(100, initial=100),
             wds.decode(),
             partial(fmow_temporal_preprocess_train, img_transform=test_transform, num_cond=frames_per_sample),
-        )
+        ).with_length(1000)
 
 
     subset_num = getattr(config.data, "subset", -1)
