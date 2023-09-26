@@ -661,7 +661,7 @@ class NCSNRunner():
                                 del frame, gif_frame
 
                         # Save gif
-                        imageio.mimwrite(os.path.join(self.args.log_sample_path, f"video_grid_{step}.gif"), gif_frames, fps=4)
+                        imageio.mimwrite(os.path.join(self.args.log_sample_path, f"video_grid_{step}.gif"), gif_frames, duration=250)
                         del gif_frames
 
                         # Stretch out multiple frames horizontally
@@ -2064,35 +2064,35 @@ class NCSNRunner():
                 # Save gif
                 if self.condp == 0.0 and self.futrf == 0:                           # (1) Prediction
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_pred_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred], duration=250)
                 elif self.condp == 0.0 and self.futrf > 0 and self.futrp == 0.0:    # (1) Interpolation
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_interp_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], duration=250)
                 elif self.condp == 0.0 and self.futrf > 0 and self.futrp > 0.0:     # (1) Interp + (2) Pred
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_interp_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], duration=250)
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_pred_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred2], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred2], duration=250)
                 elif self.condp > 0.0 and self.futrf == 0:                         # (1) Pred + (3) Gen
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_pred_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred], duration=250)
                     if len(gif_frames_pred3) > 0:
                         imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_gen_{ckpt}_{i}.gif"),
-                                         gif_frames_pred3, fps=4)
+                                         gif_frames_pred3, duration=250)
                 elif self.condp > 0.0 and self.futrf > 0 and self.futrp > 0.0 and not self.prob_mask_sync:     # (1) Interp + (2) Pred + (3) Gen
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_interp_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], duration=250)
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_pred_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred2], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred2], duration=250)
                     if len(gif_frames_pred3) > 0:
                         imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_gen_{ckpt}_{i}.gif"),
-                                         gif_frames_pred3, fps=4)
+                                         gif_frames_pred3, duration=250)
                 elif self.condp > 0.0 and self.futrf > 0 and self.futrp > 0.0 and self.prob_mask_sync:     # (1) Interp + (3) Gen
                     imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_interp_{ckpt}_{i}.gif"),
-                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], fps=4)
+                                     [*gif_frames_cond, *gif_frames_pred, *gif_frames_futr], duration=250)
                     if len(gif_frames_pred3) > 0:
                         imageio.mimwrite(os.path.join(self.args.log_sample_path if train else self.args.video_folder, f"videos_gen_{ckpt}_{i}.gif"),
-                                         gif_frames_pred3, fps=4)
+                                         gif_frames_pred3, duration=250)
 
                 del gif_frames_cond, gif_frames_pred, gif_frames_pred2, gif_frames_pred3, gif_frames_futr
 
