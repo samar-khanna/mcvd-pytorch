@@ -252,9 +252,8 @@ class NCSNRunner():
             test_iter = iter(test_loader)
         else:
             dataset, test_dataset = get_dataset(self.args.data_path, self.config, video_frames_pred=self.config.data.num_frames, start_at=self.args.start_at)
-            dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, shuffle=True,
-                                    num_workers=self.config.data.num_workers)
-            test_loader = DataLoader(test_dataset, batch_size=self.config.training.batch_size, shuffle=True,
+            dataloader = DataLoader(dataset, batch_size=self.config.training.batch_size, num_workers=self.config.data.num_workers)
+            test_loader = DataLoader(test_dataset, batch_size=self.config.training.batch_size,
                                      num_workers=self.config.data.num_workers, drop_last=True)
             test_iter = iter(test_loader)
 
@@ -940,7 +939,7 @@ class NCSNRunner():
         else:
             dataset_train, dataset_test = get_dataset(self.args.data_path, self.config, video_frames_pred=self.config.data.num_frames)
             dataset = dataset_train if getattr(self.config.sampling, "train", False) else dataset_test
-            dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size, shuffle=True, num_workers=self.config.data.num_workers)
+            dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers)
 
         scorenet.eval()
 
@@ -1196,8 +1195,7 @@ class NCSNRunner():
                 if self.config.data.dataset.upper() == 'FFHQ':
                     dataloader = FFHQ_TFRecordsDataLoader([self.args.data_path], self.config.sampling.batch_size, self.config.data.image_size)
                 else:
-                    dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size, shuffle=True,
-                                            num_workers=self.config.data.num_workers)
+                    dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers)
                 data_iter = iter(dataloader)
 
             conditional = self.config.data.num_frames_cond > 0
@@ -1206,8 +1204,7 @@ class NCSNRunner():
                 if self.config.data.dataset.upper() == 'FFHQ':
                     dataloader_cond = FFHQ_TFRecordsDataLoader([self.args.data_path], self.config.sampling.batch_size, self.config.data.image_size)
                 else:
-                    dataloader_cond = DataLoader(dataset, batch_size=self.config.sampling.batch_size, shuffle=True,
-                                            num_workers=self.config.data.num_workers)
+                    dataloader_cond = DataLoader(dataset, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers)
                 data_iter_cond = iter(dataloader_cond)
 
             # Sampler
@@ -1410,13 +1407,11 @@ class NCSNRunner():
 
         dataset_train, dataset_test = get_dataset(self.args.data_path, self.config, video_frames_pred=num_frames_pred, start_at=self.args.start_at)
         dataset = dataset_train if getattr(self.config.sampling, "train", False) else dataset_test
-        dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size//preds_per_test, shuffle=True,
-                                num_workers=self.config.data.num_workers, drop_last=False, collate_fn=my_collate)
+        dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size//preds_per_test, num_workers=self.config.data.num_workers, drop_last=False, collate_fn=my_collate)
         data_iter = iter(dataloader)
 
         if self.config.sampling.data_init:
-            dataloader2 = DataLoader(dataset, batch_size=self.config.sampling.batch_size, shuffle=True,
-                                     num_workers=self.config.data.num_workers, drop_last=False)
+            dataloader2 = DataLoader(dataset, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers, drop_last=False)
             data_iter2 = iter(dataloader2)
 
         vid_mse, vid_ssim, vid_lpips = [], [], []
@@ -2375,8 +2370,7 @@ class NCSNRunner():
             test_dataloader = FFHQ_TFRecordsDataLoader([self.args.data_path], self.config.test.batch_size, self.config.data.image_size)
         else:
             dataset, test_dataset = get_dataset(self.args.data_path, self.config)
-            test_dataloader = DataLoader(test_dataset, batch_size=self.config.test.batch_size, shuffle=True,
-                                         num_workers=self.config.data.num_workers, drop_last=True)
+            test_dataloader = DataLoader(test_dataset, batch_size=self.config.test.batch_size, num_workers=self.config.data.num_workers, drop_last=True)
 
         conditional = self.config.data.num_frames_cond > 0
         cond = None
@@ -2454,8 +2448,7 @@ class NCSNRunner():
             dataloader = FFHQ_TFRecordsDataLoader([self.args.data_path], self.config.sampling.batch_size, self.config.data.image_size)
         else:
             dataset, _ = get_dataset(self.args.data_path, self.config)
-            dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size, shuffle=True,
-                                    num_workers=self.config.data.num_workers)
+            dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers)
         data_iter = iter(dataloader)
 
         conditional = self.config.data.num_frames_cond > 0
@@ -2465,8 +2458,7 @@ class NCSNRunner():
                 dataloader_cond = FFHQ_TFRecordsDataLoader([self.args.data_path], self.config.sampling.batch_size, self.config.data.image_size)
             else:
                 dataset_cond, _ = get_dataset(self.args.data_path, self.config)
-                dataloader_cond = DataLoader(dataset_cond, batch_size=self.config.sampling.batch_size, shuffle=True,
-                                             num_workers=self.config.data.num_workers)
+                dataloader_cond = DataLoader(dataset_cond, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers)
             data_iter_cond = iter(dataloader_cond)
 
         fids, precisions, recalls = {}, {}, {}
@@ -2605,8 +2597,7 @@ class NCSNRunner():
                 dataloader_cond = FFHQ_TFRecordsDataLoader([self.args.data_path], self.config.sampling.batch_size, self.config.data.image_size)
             else:
                 dataset_cond, _ = get_dataset(self.args.data_path, self.config)
-                dataloader_cond = DataLoader(dataset_cond, batch_size=self.config.sampling.batch_size, shuffle=True,
-                                             num_workers=self.config.data.num_workers)
+                dataloader_cond = DataLoader(dataset_cond, batch_size=self.config.sampling.batch_size, num_workers=self.config.data.num_workers)
             data_iter_cond = iter(dataloader_cond)
 
         fids = {}
