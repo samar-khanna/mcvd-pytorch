@@ -41,16 +41,19 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
         tran_transform = test_transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Resize(config.data.image_size, antialias=True),
+            transforms.CenterCrop(config.data.image_size),
         ])
     else:
         tran_transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Resize(config.data.image_size, antialias=True),
+            transforms.CenterCrop(config.data.image_size),
             transforms.RandomHorizontalFlip(p=0.5),
         ])
     test_transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Resize(config.data.image_size, antialias=True),
+        transforms.CenterCrop(config.data.image_size),
     ])
 
     if config.data.dataset.upper() == 'CIFAR10':
