@@ -39,18 +39,18 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
 
     if config.data.random_flip is False:
         tran_transform = test_transform = transforms.Compose([
-            transforms.Resize(config.data.image_size),
-            transforms.ToTensor()
+            transforms.ToTensor(),
+            transforms.Resize(config.data.image_size, antialias=True),
         ])
     else:
         tran_transform = transforms.Compose([
-            transforms.Resize(config.data.image_size),
+            transforms.ToTensor(),
+            transforms.Resize(config.data.image_size, antialias=True),
             transforms.RandomHorizontalFlip(p=0.5),
-            transforms.ToTensor()
         ])
     test_transform = transforms.Compose([
-        transforms.Resize(config.data.image_size),
-        transforms.ToTensor()
+        transforms.ToTensor(),
+        transforms.Resize(config.data.image_size, antialias=True),
     ])
 
     if config.data.dataset.upper() == 'CIFAR10':
