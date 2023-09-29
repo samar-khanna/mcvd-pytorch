@@ -2195,7 +2195,7 @@ class NCSNRunner():
 
         def image_metric_stuff(metric):
             avg_metric, std_metric = metric.mean().item(), metric.std().item()
-            conf95_metric = avg_metric - float(st.norm.interval(alpha=0.95, loc=avg_metric, scale=st.sem(metric))[0])
+            conf95_metric = avg_metric - float(st.norm.interval(confidence=0.95, loc=avg_metric, scale=st.sem(metric))[0])
             return avg_metric, std_metric, conf95_metric
 
         avg_mse, std_mse, conf95_mse = image_metric_stuff(mse_list)
@@ -2218,7 +2218,7 @@ class NCSNRunner():
                 for traj in trajs:
                     fvds_list.append(frechet_distance(fake_embeddings[traj::preds_per_test], real_embeddings))
                 fvd_traj_mean, fvd_traj_std  = float(np.mean(fvds_list)), float(np.std(fvds_list))
-                fvd_traj_conf95 = fvd_traj_mean - float(st.norm.interval(alpha=0.95, loc=fvd_traj_mean, scale=st.sem(fvds_list))[0])
+                fvd_traj_conf95 = fvd_traj_mean - float(st.norm.interval(confidence=0.95, loc=fvd_traj_mean, scale=st.sem(fvds_list))[0])
             else:
                 fvd_traj_mean, fvd_traj_std, fvd_traj_conf95 = -1, -1, -1
             return avg_fvd, fvd_traj_mean, fvd_traj_std, fvd_traj_conf95
