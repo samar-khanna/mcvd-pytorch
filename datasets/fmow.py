@@ -32,15 +32,17 @@ def is_invalid_lon_lat(lon, lat):
 
 
 def fmow_temporal_images(example, img_transform, num_frames=3, stack_tensor=True, channel_first=False):
-    image_keys = sorted([k for k in example if k.endswith('.npy')])
-    metadata_keys = sorted([k for k in example if k.endswith('.json')])
+    image_keys = sorted([k for k in example if k.endswith('.npy')])[::-1]
+    metadata_keys = sorted([k for k in example if k.endswith('.json')])[::-1]
     if len(image_keys) < num_frames:
         while len(image_keys) < num_frames:
-            image_keys = ['input-0.npy'] + image_keys
-            metadata_keys = ['metadata-0.json'] + metadata_keys
+            image_keys.append('input-0.npy')
+            metadata_keys.append('metadata-0.json')
     else:
-        image_keys = image_keys[:num_frames]
-        metadata_keys = metadata_keys[:num_frames]
+        image_keys = image_keys[-num_frames:]
+        metadata_keys = metadata_keys[-num_frames:]
+    image_keys = image_keys[::-1]
+    metadata_keys = metadata_keys[::-1]
 
     img = [img_transform(example[k]) for k in image_keys]
     if stack_tensor:
