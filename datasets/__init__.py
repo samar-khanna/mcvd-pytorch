@@ -32,7 +32,7 @@ def get_dataloaders(data_path, config):
     return dataloader, test_loader
 
 
-def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
+def get_dataset(data_path, config, video_frames_pred=0, start_at=0, is_ascending=True, skip_duplicates=False, has_dummy_batch=False):
 
     assert config.data.dataset.upper() in DATASETS, \
         f"datasets/__init__.py: dataset can only be in {DATASETS}! Given {config.data.dataset.upper()}"
@@ -232,8 +232,9 @@ def get_dataset(data_path, config, video_frames_pred=0, start_at=0):
         ).with_length(10000)
         # fmow_val_meta_df = pd.read_csv('/atlas2/u/samarkhanna/fmow_csvs/fmow-val-meta.csv')
         test_dataset = wds.WebDataset('/atlas2/data/satlas/fmow_temporal_webdataset/fmow-temporal-512-val/{000000..000032}.tar').decode().compose(
-            partial(fmow_temporal_preprocess_train, img_transform=test_transform, num_cond=frames_per_sample)
-        ).with_length(1000)
+            partial(fmow_temporal_preprocess_train, img_transform=test_transform, num_cond=frames_per_sample,
+                    skip_duplicates=skip_duplicates, is_ascending=is_ascending, has_dummy_batch=has_dummy_batch)
+        ).with_length(10000)
         # test_dataset = wds.DataPipeline(
         #     wds.ResampledShards(
         #         '/atlas2/data/satlas/fmow_temporal_webdataset/fmow-temporal-512-val/{000000..000032}.tar'),

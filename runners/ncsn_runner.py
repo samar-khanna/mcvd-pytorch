@@ -1405,7 +1405,8 @@ class NCSNRunner():
         elif self.condp > 0.0 and self.futrf > 0 and self.futrp > 0.0 and self.prob_mask_sync:     # (1) Interp + (3) Gen
             num_frames_pred = max(self.config.data.num_frames, self.config.sampling.num_frames_pred)
 
-        dataset_train, dataset_test = get_dataset(self.args.data_path, self.config, video_frames_pred=num_frames_pred, start_at=self.args.start_at)
+        dataset_train, dataset_test = get_dataset(self.args.data_path, self.config, video_frames_pred=num_frames_pred, start_at=self.args.start_at,
+                                                  is_ascending=True, skip_duplicates=True, has_dummy_batch=True)
         dataset = dataset_train if getattr(self.config.sampling, "train", False) else dataset_test
         dataloader = DataLoader(dataset, batch_size=self.config.sampling.batch_size//preds_per_test, num_workers=self.config.data.num_workers, drop_last=False, collate_fn=my_collate)
         data_iter = iter(dataloader)
@@ -1429,7 +1430,9 @@ class NCSNRunner():
         # Sampler
         sampler = self.get_sampler()
 
-        for i, (real_, _) in tqdm(enumerate(dataloader), total=min(max_data_iter, len(dataloader)), desc="\nvideo_gen dataloader"):
+        for i, (real_, _) in tqdm(enumerate(iter(dataset_test)), total=max_data_iter, desc="\nvideo_gen dataloader"):
+            if real_ is None:
+                continue
 
             if i >= max_data_iter: # stop early
                 break
@@ -1563,6 +1566,18 @@ class NCSNRunner():
 
             pred = torch.cat(pred_samples, dim=1)[:, :self.config.data.channels*num_frames_pred]
             pred = inverse_data_transform(self.config, pred)
+
+            ## ADDED
+            real_im = Transforms.functional.to_pil_image(real.squeeze(0))  # (C, H, W)
+            pred_im = Transforms.functional.to_pil_image(pred.squeeze(0))  # (C, H, W)
+
+            generated_dir = '/atlas2/u/samarkhanna/diffusion_sat_runs/mcvd_256/pred_samples/generated'
+            reference_dir = '/atlas2/u/samarkhanna/diffusion_sat_runs/mcvd_256/pred_samples/ground_truth'
+            os.makedirs(generated_dir, exist_ok=True)
+            os.makedirs(reference_dir, exist_ok=True)
+            pred_im.save(os.path.join(generated_dir, f'{i}.png'))
+            real_im.save(os.path.join(reference_dir, f'{i}.png'))
+
             # pred has length of multiple of n (because we repeat data sample n times)
             
             if real.shape[1] < pred.shape[1]: # We cannot calculate MSE, PSNR, SSIM

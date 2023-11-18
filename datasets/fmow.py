@@ -31,18 +31,18 @@ def is_invalid_lon_lat(lon, lat):
         lon < -180 or lon > 180 or lat < -90 or lat > 90
 
 
-def fmow_temporal_images(example, img_transform, num_frames=3, stack_tensor=True, channel_first=False):
-    image_keys = sorted([k for k in example if k.endswith('.npy')])[::-1]
-    metadata_keys = sorted([k for k in example if k.endswith('.json')])[::-1]
+def fmow_temporal_images(example, img_transform, num_frames=3, is_random=False, stack_tensor=True, channel_first=False):
+    image_keys = sorted([k for k in example if k.endswith('.npy')])
+    metadata_keys = sorted([k for k in example if k.endswith('.json')])
     if len(image_keys) < num_frames:
         while len(image_keys) < num_frames:
             image_keys.append('input-0.npy')
             metadata_keys.append('metadata-0.json')
     else:
-        image_keys = image_keys[-num_frames:]
-        metadata_keys = metadata_keys[-num_frames:]
-    image_keys = image_keys[::-1]
-    metadata_keys = metadata_keys[::-1]
+        img_md = random.sample(list(zip(image_keys, metadata_keys)), k=num_frames) \
+            if is_random else list(zip(image_keys, metadata_keys))[:num_frames]
+        image_keys = [img for img, md in img_md]
+        metadata_keys = [md for img, md in img_md]
 
     img = [img_transform(example[k]) for k in image_keys]
     if stack_tensor:
@@ -91,11 +91,24 @@ def fmow_numerical_metadata(example, meta_df, target_resolution, num_metadata, r
     return torch.tensor([lon + base_lon, lat + base_lat, gsd, cloud_cover, year, month, day])
 
 
-def fmow_temporal_preprocess_train(examples, img_transform, num_cond=2, with_target=True):
+def fmow_temporal_preprocess_train(examples, img_transform, num_cond=2, with_target=True, skip_duplicates=False, is_ascending=True, has_dummy_batch=False):
     for example in examples:
         img_temporal, md_keys = fmow_temporal_images(example, img_transform, num_frames=num_cond)
 
-        if with_target:
-            yield img_temporal, torch.tensor(1)
+        ascending_idx = np.argsort(md_keys).tolist()
+        img_temporal = [img_temporal[i] for i in (ascending_idx if is_ascending else ascending_idx[::-1])]
+        md_keys = [md_keys[i] for i in (ascending_idx if is_ascending else ascending_idx[::-1])]
+
+        if has_dummy_batch:
+            img_temporal = img_temporal.unsqueeze(0)
+
+        if skip_duplicates and md_keys[0] in md_keys[1:]:  # if target img is in cond, cannot generate
+            if with_target:
+                yield None, torch.tensor(1)
+            else:
+                yield None
         else:
-            yield img_temporal
+            if with_target:
+                yield img_temporal, torch.tensor(1)
+            else:
+                yield img_temporal
