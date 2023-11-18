@@ -96,7 +96,8 @@ def fmow_temporal_preprocess_train(examples, img_transform, num_cond=2, with_tar
         img_temporal, md_keys = fmow_temporal_images(example, img_transform, num_frames=num_cond)
 
         ascending_idx = np.argsort(md_keys).tolist()
-        img_temporal = [img_temporal[i] for i in (ascending_idx if is_ascending else ascending_idx[::-1])]
+        img_temporal = img_temporal[ascending_idx if is_ascending else ascending_idx[::-1]]
+        # img_temporal = [img_temporal[i] for i in (ascending_idx if is_ascending else ascending_idx[::-1])]
         md_keys = [md_keys[i] for i in (ascending_idx if is_ascending else ascending_idx[::-1])]
 
         if has_dummy_batch:
